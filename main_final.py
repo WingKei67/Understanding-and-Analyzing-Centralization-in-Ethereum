@@ -163,27 +163,34 @@ class Auction(Model):
                 else:
                     probability = np.random.uniform(0.9, 1.0)
 
-                if strategy == 'Naive':
-                    agent = PlayerWithNaiveStrategy(agent_id, self, pm, delay, probability)
-                elif strategy == 'Adaptive':
+                if agent_id == 8:
+                    pm = random.uniform(0.005, 0.009)
+                    delay = random.choice([0, 10, 20, 30, 40, 50])
+                    probability = np.random.uniform(0.8, 1.0)
                     agent = PlayerWithAdaptiveStrategy(agent_id, self, pm, delay, probability)
-                elif strategy == 'LastMinute':
-                    time_reveal_epsilon = 0
+                
+                if agent_id in [1, 3]:
                     time_estimate = 1200
+                    time_reveal_epsilon = 0
                     agent = PlayerWithLastMinuteStrategy(agent_id, self, pm, delay, probability, time_estimate,
-                                                         time_reveal_epsilon)
-                elif strategy == 'Stealth':
+                                                      time_reveal_epsilon)
+
+                if agent_id in [0, 2, 6, 7]:
                     time_estimate = 1200
                     stealth_factor = random.uniform(0.8, 1)
                     time_reveal_epsilon = 0
                     agent = PlayerWithStealthStrategy(agent_id, self, pm, delay, probability, time_estimate,
                                                       time_reveal_epsilon, stealth_factor)
-                elif strategy == 'Bluff':
+                if agent_id == 4:
                     time_estimate = 1200
                     bluff_factor = random.uniform(1, 1.2)
                     time_reveal_epsilon = 100
                     agent = PlayerWithBluffStrategy(agent_id, self, pm, delay, probability, time_estimate,
                                                   time_reveal_epsilon, bluff_factor)
+                
+                if agent_id == 5:
+                    agent = PlayerWithNaiveStrategy(agent_id, self, pm, delay, probability)
+                    
                 self.schedule.add(agent)
                 agent_id += 1
 
@@ -221,8 +228,8 @@ class Auction(Model):
 
     def setup_signals(self, rate_public_mean, rate_public_sd, rate_private_mean, rate_private_sd):
         # Initialize signal parameters
-        self.public_signal = 0
-        self.public_signal_value = 0
+        self.public_signal = 16
+        self.public_signal_value = 0.0011648
         self.private_signal = 0
         self.private_signal_max = 0
         self.aggregated_signal_max = 0
@@ -258,7 +265,7 @@ class Auction(Model):
         self.public_signal += new_public_signal
 
         for _ in range(new_public_signal) :
-            signal_value = np.random.lognormal(mean=-9.7408, sigma=0.8544)
+            signal_value = np.random.lognormal(mean=-9.85, sigma=0.80)
             # Add the value of the current public signal to the total value
             self.public_signal_value += signal_value
 
@@ -267,7 +274,7 @@ class Auction(Model):
         self.private_signal += new_private_signal
 
         for _ in range(new_private_signal) :
-            private_signal_value = np.random.lognormal(mean=-8.3500, sigma=0.8792)
+            private_signal_value = np.random.lognormal(mean=-8.45, sigma=0.85)
             self.private_signal_max += private_signal_value
             for agent in self.schedule.agents :
                 if random.random() < agent.probability :
